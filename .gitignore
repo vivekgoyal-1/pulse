@@ -1,0 +1,66 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+*.log
+*.tsbuildinfo
+
+# Uploads (backend)
+backend/uploads/
+uploads/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+*.pid
+*.pid.lock
+
+# Test coverage & runtime
+coverage/
+.nyc_output/
+temp/
+tmp/
+
+# Database
+*.db
+
+# Documentation files (keep local for reference, exclude from git tracking)
+PROJECT_ASSESSMENT.md
+REQUIREMENTS_CHECKLIST.md
+TECHNICAL_ANALYSIS.md
+DEPLOYMENT_GUIDE.md
+SENSITIVITY_FFMPEG_GUIDE.md
+ARCHITECTURE_VISUAL_GUIDE.md
+CHECKLIST_NEXT_STEPS.md
+DOCUMENTATION_INDEX.md
+QUICK_SUMMARY.md
+WORK_COMPLETED.md
+SOLUTION_SUMMARY.md

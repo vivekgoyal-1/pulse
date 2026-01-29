@@ -33,9 +33,9 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gray-900 text-gray-100">
       <div className="bg-slate-900/95 p-10 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
-        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold mb-2 text-green-400">
           Pulse Video Portal
         </h1>
         <p className="text-gray-400 mb-6 text-sm">
@@ -110,7 +110,7 @@ export function LoginPage() {
 
           <button
             type="submit"
-            className="w-full rounded-full border-none py-3 px-5 bg-gradient-to-r from-green-500 to-blue-500 text-white font-semibold cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed hover:from-green-600 hover:to-blue-600 transition-all mt-2"
+            className="w-full rounded-full border-none py-3 px-5 bg-green-500 text-white font-semibold cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed hover:bg-green-600 transition-all mt-2"
             disabled={loading}
           >
             {loading ? 'Please wait…' : isRegister ? 'Create account' : 'Sign in'}

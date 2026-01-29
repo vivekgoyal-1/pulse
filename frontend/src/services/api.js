@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ;
+
+let onTokenExpired = null;
 
 class ApiClient {
   constructor() {
@@ -7,6 +9,10 @@ class ApiClient {
 
   setToken(token) {
     this.token = token;
+  }
+
+  setOnTokenExpired(callback) {
+    onTokenExpired = callback;
   }
 
   async request(path, options = {}) {
@@ -20,6 +26,14 @@ class ApiClient {
       ...options,
       headers,
     });
+
+    // Handle token expiration (401 Unauthorized)
+    if (res.status === 401) {
+      if (onTokenExpired) {
+        onTokenExpired();
+      }
+      throw new Error('Token expired. Please login again.');
+    }
 
     if (!res.ok) {
       const errorBody = await res.json().catch(() => ({}));
@@ -82,4 +96,3 @@ class ApiClient {
 export const api = new ApiClient();
 
 export { API_BASE_URL };
-

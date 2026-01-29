@@ -19,6 +19,13 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
+  useEffect(() => {
+    // Set up token expiration handler
+    api.setOnTokenExpired(() => {
+      logout();
+    });
+  }, []);
+
   const login = (nextUser, nextToken) => {
     setUser(nextUser);
     setToken(nextToken);

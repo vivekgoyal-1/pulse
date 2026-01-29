@@ -1,103 +1,57 @@
 # Pulse Video Sensitivity Application
 
-Full-stack demo application implementing video upload, mock sensitivity analysis with real-time progress, and secure streaming with multi-tenant RBAC.
+Full-stack application for video upload, sensitivity analysis, and streaming with multi-tenant support.
 
 ## Stack
 
-- **Backend**: Node.js, Express, MongoDB (Mongoose), Socket.io, JWT, Multer
-- **Frontend**: React + Vite, Tailwind CSS, Socket.io client, native Fetch API
+- **Backend**: Node.js, Express, MongoDB, Socket.io, JWT, Multer, FFmpeg
+- **Frontend**: React + Vite, Tailwind CSS, Socket.io client
 
-## Project structure
+## Project Structure
 
-- `backend/` – REST API, WebSocket server, Mongo models
-- `frontend/` – React SPA (authentication, upload, dashboard, player)
+- `backend/src/` – API server, models (User, Video), routes, auth middleware
+- `frontend/src/` – React components, authentication context, dashboard, upload service
 
-## Prerequisites
+## Quick Start
 
-- Node.js LTS
-- MongoDB instance (local or Atlas)
-
-## Backend setup
+### Backend
 
 ```bash
 cd backend
-cp .env.example .env   # adjust values if needed
-npm install            # already run if using this repo directly
+npm install
 npm run dev
 ```
 
-Backend runs on `http://localhost:4000` by default.
+Backend runs on `http://localhost:4000`. Requires `.env` with MongoDB URI, JWT secret, and upload directory.
 
-### Key endpoints
-
-- `POST /api/auth/register` – register user `{ email, password, name, tenantId, role? }`
-- `POST /api/auth/login` – login user `{ email, password }`
-- `GET  /api/videos` – list videos for current tenant (filters: `sensitivityStatus`, `status`, `search`, `dateFrom`, `dateTo`, `minSize`, `maxSize`)
-- `POST /api/videos` – upload video (Multer `video` field); **Editor/Admin only**
-- `GET  /api/videos/:id` – get single video metadata
-- `GET  /api/videos/:id/stream` – stream video via HTTP range (expects `?token=<JWT>` or `Authorization: Bearer <JWT>`)
-- `POST /api/videos/:id/subscribe` – attach a Socket.io client id to a specific video room to receive progress
-
-### Real-time processing
-
-Uploading a video:
-
-1. Stores the file on disk under `UPLOAD_DIR` with a unique filename.
-2. Creates a `Video` document with status `processing` and progress `0`.
-3. Kicks off a simulated sensitivity pipeline:
-   - Periodically updates progress (10 → 30 → 60 → 80 → 100%).
-   - Emits `processingProgress` Socket.io events to the room `videoId`.
-   - Marks sensitivity as `safe` or `flagged` using a simple deterministic rule.
-
-In a real system you would replace this simulation with an FFmpeg-based pipeline and an ML classifier.
-
-### Multi-tenant & RBAC
-
-- Each `User` has `tenantId` and `role` (`viewer`, `editor`, `admin`).
-- Each `Video` stores `tenantId` and `owner`.
-- All video queries filter by `tenantId` for isolation.
-- Upload endpoint is protected with `requireRole('editor','admin')`.
-
-## Frontend setup
+### Frontend
 
 ```bash
 cd frontend
-cp .env.example .env.local   # or .env
-npm install                  # already run if using this repo directly
+npm install
 npm run dev
 ```
 
-Frontend runs on `http://localhost:5173` by default.
+Frontend runs on `http://localhost:5173`. Requires `.env.local` with `VITE_API_BASE_URL` pointing to backend.
 
-### Frontend flow
+## Features
 
-1. **Auth screen** (`LoginPage`)
-   - Toggle between register/login.
-   - On success, stores `{ user, token }` in `localStorage` via `AuthContext`.
-2. **Dashboard**
-   - Upload panel (hidden for `viewer` role):
-     - File selection with validation (200MB limit).
-     - Upload progress indicator.
-     - Connection status indicator.
-   - Video library table with:
-     - **Advanced filtering**:
-       - Status filter (`uploaded`, `processing`, `completed`, `failed`).
-       - Sensitivity filter (`safe`, `flagged`, `pending`).
-       - Date range filtering (from/to dates).
-       - Text search by filename.
-     - **Metadata display**: File size, upload date, status, sensitivity badge.
-     - Per-row progress bar with real-time updates.
-     - Inline `<video>` player for completed videos (HTTP range streaming).
-     - Refresh button to reload video list.
-   - Real-time progress:
-     - Socket.io client connects to backend on mount.
-     - After upload, frontend calls `/api/videos/:id/subscribe` with the socket id.
-     - Listens for `processingProgress` events and updates UI in real-time.
-   - **Full-screen responsive design** using Tailwind CSS.
+- **User Authentication**: Register/login with JWT tokens
+- **Video Upload**: Upload videos with progress tracking (Editor/Admin roles only)
+- **Real-time Progress**: Socket.io updates during video processing
+- **Multi-tenant**: Users isolated by tenant ID
+- **Role-based Access**: Viewer, Editor, and Admin roles
+- **Video Streaming**: HTTP range-based streaming with authentication
+- **Sensitivity Analysis**: Process videos and mark as safe/flagged
 
-### Configuration
+## API Endpoints
 
-- `VITE_API_BASE_URL` – base URL for backend (default `http://localhost:4000`).
+- `POST /api/auth/register` – Create account
+- `POST /api/auth/login` – Login user
+- `GET /api/videos` – List videos with filters
+- `POST /api/videos` – Upload video
+- `GET /api/videos/:id/stream` – Stream video file
+- `POST /api/videos/:id/subscribe` – Subscribe to processing updates
 
 ## Running the full flow locally
 
@@ -117,17 +71,25 @@ Frontend runs on `http://localhost:5173` by default.
 - Backend includes a `/api/health` endpoint for basic availability checks.
 - You can easily add Jest or supertest based on this structure; tests are not wired by default to keep the assignment focused on core workflow.
 
-## Deployment notes
+## Documentation Package
 
-For deployment, you can:
+### Installation and Setup Guide
+Follow the Quick Start section above to get both backend and frontend running locally. Ensure you have Node.js installed and a MongoDB instance available (local or cloud). Environment files (`.env` and `.env.local`) control connection strings and configuration.
 
-- Host the backend on Render/Heroku/Fly.io or similar.
-- Use MongoDB Atlas for the database.
-- Deploy the React frontend on Netlify/Vercel and set `VITE_API_BASE_URL` to the public backend URL.
+### API Documentation
+All endpoints are listed in the API Endpoints section. Authentication uses JWT tokens returned after login. Include the token in requests via `Authorization: Bearer <token>` header. Videos are scoped by tenant; users only see videos from their tenant.
 
-Make sure to:
+### User Manual
+**For Editors/Admins**: Use the upload panel on the Dashboard to select and upload video files. Progress updates in real-time. Once processing completes, sensitivity status is shown (safe or flagged).
 
-- Use strong `JWT_SECRET`.
-- Store uploads in S3 or another object store instead of the local filesystem.
-- Put your backend behind HTTPS and configure CORS appropriately.
+**For Viewers**: Browse uploaded videos in the library, apply filters by status, sensitivity, or date range, and watch completed videos inline using the player.
 
+### Architecture Overview
+The application follows a standard client-server architecture. Frontend (React/Vite) communicates with backend (Express) via REST and WebSocket. MongoDB stores users and video metadata. Uploaded files are stored on disk. Real-time progress is delivered via Socket.io room subscriptions keyed by video ID.
+
+### Assumptions and Design Decisions
+- **Multi-tenancy**: All data queries filter by tenant ID for complete isolation between organizations.
+- **Role-based access**: Three roles (Viewer, Editor, Admin) control upload and admin permissions.
+- **Async processing**: Video processing is simulated with deterministic progress events; replace with actual FFmpeg pipeline in production.
+- **Streaming**: Videos are served via HTTP range requests for efficient playback without re-encoding.
+- **JWT expiration**: Tokens have configurable TTL; refresh logic can be added as needed.
